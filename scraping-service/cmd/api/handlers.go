@@ -23,6 +23,21 @@ func (api *Api) GetAll(c *gin.Context) {
 
 }
 
+func (api *Api) GetAllTags(c *gin.Context) {
+
+	var quoteInstance data.Quote
+
+	all, err := quoteInstance.GetAllTags()
+
+	if err != nil {
+		api.errorJSON(c, err)
+		log.Println(err)
+		return
+	}
+	api.writeJSON(c, http.StatusAccepted, all)
+
+}
+
 func (api *Api) GetByAuthor(c *gin.Context) {
 
 	author := c.Param("author")

@@ -68,7 +68,7 @@ func (q *Quote) GetByTag(tag string) ([]baseQuote, error) {
 	return baseQuotes, nil
 }
 
-func (q Quote) GetAll() ([]baseQuote, error) {
+func (q *Quote) GetAll() ([]baseQuote, error) {
 
 	var quotes []Quote
 	result := db.Preload("Tags").Find(&quotes)
@@ -78,6 +78,22 @@ func (q Quote) GetAll() ([]baseQuote, error) {
 
 	baseQuotes := q.basingQuote(quotes)
 	return baseQuotes, nil
+}
+
+func (q *Quote) GetAllTags() ([]string, error) {
+
+	var tags []Tag
+	result := db.Find(&tags)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	var baseTags []string
+	for _, tag := range tags {
+		baseTags = append(baseTags, tag.Name)
+	}
+
+	return baseTags, nil
+
 }
 
 func (q *Quote) DatabaseIsEmpty() (bool, error) {

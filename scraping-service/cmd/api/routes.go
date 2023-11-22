@@ -21,6 +21,7 @@ func (app *Api) Routes() *gin.Engine {
 	r.GET("/all", app.GetAll)
 	r.GET("/author/:author", app.GetByAuthor)
 	r.GET("/tag/:tag", app.GetByTag)
+	r.GET("/tags", app.GetAllTags)
 
 	return r
 }

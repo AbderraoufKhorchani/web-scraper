@@ -38,12 +38,12 @@ If Go is not installed or you have an older version, you can download and instal
 Make is used for building and managing the project. Verify if Make is installed with:
     
 ```bash
-	make --version
+make --version
 ```    
 If Make is not installed, you can typically install it using your system's package manager:
 
 ```bash
-	sudo apt-get install make
+sudo apt-get install make
 ```   
 
 -  **Docker:** 
@@ -51,7 +51,7 @@ If Make is not installed, you can typically install it using your system's packa
 The project relies on Docker for containerization. Check if Docker is installed:
 
 ```bash
-	docker --version 
+docker --version 
 ```  
 If Docker is not installed, you can download and install it from the official Docker website: [https://www.docker.com/get-started](https://www.docker.com/get-started).
 
@@ -61,7 +61,7 @@ Docker Compose is used for defining and running multi-container Docker applicati
 
 
 ```bash
-	docker-compose --version
+docker-compose --version
 ```
 
 If Docker Compose is not installed, you can download and install it from the official Docker Compose website: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/).
@@ -71,9 +71,9 @@ If Docker Compose is not installed, you can download and install it from the off
 To install the project, follow these steps:
 
 ```bash
-	git clone https://github.com/AbderraoufKhorchani/web-scraper.git
-	cd web-scraper
-	make -C project install
+git clone https://github.com/AbderraoufKhorchani/web-scraper.git
+cd web-scraper
+make -C project install
 ```
 
 **Note:** Ensure that ports 5432 and 8080 are available and not in use by other applications on your system.
@@ -86,7 +86,7 @@ To install the project, follow these steps:
     After completing the installation steps, run the project using the following command:
     
 ```bash
-	make -C project up_build
+make -C project up_build
 ```
     
 The scraping of the website and saving to the database occurs automatically the first time you run the project.
@@ -96,7 +96,7 @@ The scraping of the website and saving to the database occurs automatically the 
     To retrieve all quotes, you can use the following endpoint:
     
 ```bash
-	curl http://localhost:8080/all
+curl http://localhost:8080/all
 ```
     
 -  **Retrieve Quotes Based on Tag:**
@@ -104,7 +104,7 @@ The scraping of the website and saving to the database occurs automatically the 
     To retrieve quotes based on a specific tag, replace "desired_tag" with the desired tag:
     
 ```bash
-	curl http://localhost:8080/tag/desired_tag
+curl http://localhost:8080/tag/desired_tag
 ```    
     
 - **Retrieve Quotes Based on Author:**
@@ -112,7 +112,7 @@ The scraping of the website and saving to the database occurs automatically the 
     To retrieve quotes based on a specific author, replace "author_name" with the desired author:
     
  ```bash
-     curl http://localhost:8080/author/author_name
+curl http://localhost:8080/author/author_name
 ```
     
 - **Retrieve All Tags:**
@@ -120,7 +120,7 @@ The scraping of the website and saving to the database occurs automatically the 
     To retrieve all tags, use the following endpoint:
     
 ```bash
-	curl http://localhost:8080/tags
+curl http://localhost:8080/tags
 ```
 
 

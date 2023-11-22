@@ -3,67 +3,77 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
-	"sync"
+	"net/http"
+	"os"
+	"time"
 
-	"github.com/gocolly/colly"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
+	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/cmd/api"
+	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/data"
+	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/scraper"
 )
 
+var counts int64
+
+const webPort = "80"
+
+type Config struct {
+	DB      *gorm.DB
+	Api     api.Api
+	Models  data.Models
+	Scraper scraper.Scraper
+}
+
 func main() {
-	// Create a new collector
-	c := colly.NewCollector()
+	fmt.Println("1")
+	conn := connectToDB()
+	if conn == nil {
+		log.Panic("Can't connect to Postgres!")
+	}
+	fmt.Println("2")
 
-	// Set the URL to scrape
-	url := "http://quotes.toscrape.com"
+	app := Config{
+		DB:      conn,
+		Models:  data.New(conn),
+		Api:     api.Api{},
+		Scraper: scraper.Scraper{},
+	}
+	fmt.Println("3")
+	app.Scraper.Scrape()
 
-	// Create a WaitGroup to wait for all goroutines to finish
-	var wg sync.WaitGroup
-
-	// Define the CSS selector for quotes
-	quoteSelector := "div.quote"
-
-	// Set up the callback for handling extracted data
-	c.OnHTML(quoteSelector, func(e *colly.HTMLElement) {
-		// Decrement the WaitGroup counter when the goroutine completes
-		defer wg.Done()
-
-		// Extract quote text
-		quoteText := e.ChildText("span.text")
-
-		// Extract author
-		author := e.ChildText("small.author")
-
-		// Extract tags using strings.Fields
-		tags := strings.Fields(e.ChildText("div.tags"))
-		if len(tags) > 0 {
-			tags = tags[1:]
-		}
-
-		// Print the extracted data
-		fmt.Printf("Quote: %s\nAuthor: %s\nTags: %s\n\n", quoteText, author, strings.Join(tags, ", "))
-	})
-
-	// Set up error handling
-	c.OnError(func(r *colly.Response, err error) {
-		log.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
-	})
-
-	// Start the scraping process with a goroutine for each page
-	for i := 1; i <= 5; i++ {
-		// Increment the WaitGroup counter for each goroutine
-		wg.Add(1)
-
-		go func(page int) {
-			defer wg.Done()
-
-			// Visit each page concurrently
-			err := c.Visit(fmt.Sprintf("%s/page/%d/", url, page))
-			if err != nil {
-				log.Println("Error visiting page:", page, "-", err)
-			}
-		}(i)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", webPort),
+		Handler: app.Api.Routes(),
 	}
 
-	// Wait for all goroutines to finish
-	wg.Wait()
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Panic(err)
+	}
+
+}
+
+func connectToDB() *gorm.DB {
+	dsn := os.Getenv("DSN")
+	for {
+		connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err != nil {
+			log.Println("Postgres not yet ready ...")
+			counts++
+		} else {
+			log.Println("Connected to Postgres!")
+			return connection
+		}
+
+		if counts > 10 {
+			log.Println(err)
+			return nil
+		}
+
+		log.Println("Backing off for two seconds....")
+		time.Sleep(2 * time.Second)
+		continue
+	}
 }

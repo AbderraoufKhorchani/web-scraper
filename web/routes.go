@@ -1,11 +1,12 @@
-package api
+package web
 
 import (
+	"github.com/AbderraoufKhorchani/web-scraper/internal/handlers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-func (app *Api) Routes() *gin.Engine {
+func Routes() *gin.Engine {
 
 	r := gin.Default()
 
@@ -18,10 +19,10 @@ func (app *Api) Routes() *gin.Engine {
 	config.MaxAge = 300
 	r.Use(cors.New(config))
 
-	r.GET("/all", app.GetAll)
-	r.GET("/author/:author", app.GetByAuthor)
-	r.GET("/tag/:tag", app.GetByTag)
-	r.GET("/tags", app.GetAllTags)
+	r.GET("/all", handlers.GetAll)
+	r.GET("/author/:author", handlers.GetByAuthor)
+	r.GET("/tag/:tag", handlers.GetByTag)
+	r.GET("/tags", handlers.GetAllTags)
 
 	return r
 }

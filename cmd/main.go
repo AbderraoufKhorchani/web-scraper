@@ -4,48 +4,36 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/cmd/api"
-	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/data"
-	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/scraper"
+	"github.com/AbderraoufKhorchani/web-scraper/internal/handlers"
+	"github.com/AbderraoufKhorchani/web-scraper/internal/scraper"
+	"github.com/AbderraoufKhorchani/web-scraper/web"
 )
 
 var counts int64
 
-const webPort = "80"
-
-type Config struct {
-	DB      *gorm.DB
-	Api     api.Api
-	Models  data.Models
-	Scraper scraper.Scraper
-}
+const (
+	dsn     = "host=localhost port=5432 user=postgres password=password dbname=quotes sslmode=disable timezone=UTC connect_timeout=5"
+	webPort = "8080"
+)
 
 func main() {
-	fmt.Println("1")
 	conn := connectToDB()
 	if conn == nil {
 		log.Panic("Can't connect to Postgres!")
 	}
-	fmt.Println("2")
 
-	app := Config{
-		DB:      conn,
-		Models:  data.New(conn),
-		Api:     api.Api{},
-		Scraper: scraper.Scraper{},
-	}
-	fmt.Println("3")
-	app.Scraper.Scrape()
+	handlers.New(conn)
+
+	scraper.Scrape()
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
-		Handler: app.Api.Routes(),
+		Handler: web.Routes(),
 	}
 
 	err := srv.ListenAndServe()
@@ -56,7 +44,6 @@ func main() {
 }
 
 func connectToDB() *gorm.DB {
-	dsn := os.Getenv("DSN")
 	for {
 		connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 		if err != nil {

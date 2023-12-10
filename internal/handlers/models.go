@@ -1,8 +1,7 @@
-package data
+package handlers
 
 import (
 	"errors"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -32,15 +31,9 @@ type Models struct {
 
 var db *gorm.DB
 
-func New(dbPool *gorm.DB) Models {
+func New(dbPool *gorm.DB) error {
 	db = dbPool
-	err := db.AutoMigrate(&Quote{}, &Tag{})
-	if err != nil {
-		fmt.Print(err)
-	}
-	return Models{
-		Quote: Quote{},
-	}
+	return db.AutoMigrate(&Quote{}, &Tag{})
 }
 
 func (q *Quote) GetByAuthor(author string) ([]baseQuote, error) {

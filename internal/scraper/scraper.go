@@ -6,17 +6,17 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/AbderraoufKhorchani/web-scraper/scraping-service/data"
+	"github.com/AbderraoufKhorchani/web-scraper/internal/handlers"
 	"github.com/gocolly/colly"
 )
 
 type Scraper struct {
 }
 
-var quoteInstance data.Quote
+var quoteInstance handlers.Quote
 var mu sync.Mutex
 
-func (s *Scraper) Scrape() {
+func Scrape() error {
 	// Lock the mutex before checking if the database is empty
 	mu.Lock()
 	defer mu.Unlock()
@@ -25,7 +25,7 @@ func (s *Scraper) Scrape() {
 	isEmpty, err := quoteInstance.DatabaseIsEmpty()
 	if err != nil {
 		log.Println("Error checking if the database is empty:", err)
-		return
+		return err
 	}
 
 	if isEmpty {
@@ -52,7 +52,7 @@ func (s *Scraper) Scrape() {
 				tags = append(tags, el.Text)
 			})
 
-			quote := &data.Quote{
+			quote := &handlers.Quote{
 				Author:    author,
 				QuoteText: quoteText,
 			}
@@ -91,4 +91,6 @@ func (s *Scraper) Scrape() {
 		// Wait for all goroutines to finish
 		wg.Wait()
 	}
+
+	return nil
 }

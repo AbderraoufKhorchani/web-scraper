@@ -1,0 +1,97 @@
+definitions:
+  handlers.baseQuote:
+    properties:
+      author:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      text:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /all:
+    get:
+      description: Retrieves all quotes from the database.
+      responses:
+        "200":
+          description: List of quotes
+          schema:
+            items:
+              $ref: '#/definitions/handlers.baseQuote'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieves all quotes
+      tags:
+      - All quotes
+  /author/{author}:
+    get:
+      description: Retrieves quotes from the database based on the provided author
+        name.
+      parameters:
+      - description: Author's name
+        in: path
+        name: author
+        required: true
+        type: string
+      responses:
+        "200":
+          description: List of quotes by the specified author
+          schema:
+            items:
+              $ref: '#/definitions/handlers.baseQuote'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieves quotes by author
+      tags:
+      - Quotes by author
+  /tag/{tag}:
+    get:
+      description: Retrieves quotes from the database based on the provided tag.
+      parameters:
+      - description: Tag name
+        in: path
+        name: tag
+        required: true
+        type: string
+      responses:
+        "200":
+          description: List of quotes with the specified tag
+          schema:
+            items:
+              $ref: '#/definitions/handlers.baseQuote'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieves quotes by tag
+      tags:
+      - Quotes by tag
+  /tags:
+    get:
+      description: Retrieves all tags from the database.
+      responses:
+        "200":
+          description: List of tags
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Retrieves all tags
+      tags:
+      - All tags
+swagger: "2.0"

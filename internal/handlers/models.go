@@ -2,7 +2,10 @@ package handlers
 
 import (
 	"errors"
+	"log"
+	"time"
 
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -25,10 +28,6 @@ type Tag struct {
 	Quotes []Quote `gorm:"many2many:quote_tags;"`
 }
 
-type Models struct {
-	Quote Quote
-}
-
 var db *gorm.DB
 
 func New(dbPool *gorm.DB) error {
@@ -36,7 +35,7 @@ func New(dbPool *gorm.DB) error {
 	return db.AutoMigrate(&Quote{}, &Tag{})
 }
 
-func (q *Quote) GetByAuthor(author string) ([]baseQuote, error) {
+func GetByAuthorDB(author string) ([]baseQuote, error) {
 
 	var quotes []Quote
 	result := db.Preload("Tags").Where("author = ?", author).Find(&quotes)
@@ -44,11 +43,11 @@ func (q *Quote) GetByAuthor(author string) ([]baseQuote, error) {
 		return nil, result.Error
 	}
 
-	baseQuotes := q.basingQuote(quotes)
+	baseQuotes := basingQuote(quotes)
 	return baseQuotes, nil
 }
 
-func (q *Quote) GetByTag(tag string) ([]baseQuote, error) {
+func GetByTagDB(tag string) ([]baseQuote, error) {
 	var quotes []Quote
 	result := db.Preload("Tags").Joins("JOIN quote_tags ON quotes.id = quote_tags.quote_id").
 		Joins("JOIN tags ON tags.id = quote_tags.tag_id").
@@ -57,11 +56,11 @@ func (q *Quote) GetByTag(tag string) ([]baseQuote, error) {
 		return nil, result.Error
 	}
 
-	baseQuotes := q.basingQuote(quotes)
+	baseQuotes := basingQuote(quotes)
 	return baseQuotes, nil
 }
 
-func (q *Quote) GetAll() ([]baseQuote, error) {
+func GetAllDB() ([]baseQuote, error) {
 
 	var quotes []Quote
 	result := db.Preload("Tags").Find(&quotes)
@@ -69,11 +68,11 @@ func (q *Quote) GetAll() ([]baseQuote, error) {
 		return nil, result.Error
 	}
 
-	baseQuotes := q.basingQuote(quotes)
+	baseQuotes := basingQuote(quotes)
 	return baseQuotes, nil
 }
 
-func (q *Quote) GetAllTags() ([]string, error) {
+func GetAllTagsDB() ([]string, error) {
 
 	var tags []Tag
 	result := db.Find(&tags)
@@ -89,7 +88,7 @@ func (q *Quote) GetAllTags() ([]string, error) {
 
 }
 
-func (q *Quote) DatabaseIsEmpty() (bool, error) {
+func DatabaseIsEmpty() (bool, error) {
 	var count int64
 	result := db.Model(&Quote{}).Count(&count)
 	if result.Error != nil {
@@ -99,7 +98,7 @@ func (q *Quote) DatabaseIsEmpty() (bool, error) {
 	return count == 0, nil
 }
 
-func (q *Quote) AddQuoteWithTags(quote Quote, tagNames []string) error {
+func AddQuoteWithTags(quote Quote, tagNames []string) error {
 	tx := db.Begin()
 
 	if err := tx.Create(&quote).Error; err != nil {
@@ -129,7 +128,7 @@ func (q *Quote) AddQuoteWithTags(quote Quote, tagNames []string) error {
 	return tx.Commit().Error
 }
 
-func (q *Quote) basingQuote(quotes []Quote) []baseQuote {
+func basingQuote(quotes []Quote) []baseQuote {
 
 	var baseQuotes []baseQuote
 
@@ -148,4 +147,27 @@ func (q *Quote) basingQuote(quotes []Quote) []baseQuote {
 
 	}
 	return baseQuotes
+}
+
+func ConnectToDB(dsn string) *gorm.DB {
+	var counts int64
+	for {
+		connection, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err != nil {
+			log.Println("Postgres not yet ready ...")
+			counts++
+		} else {
+			log.Println("Connected to Postgres!")
+			return connection
+		}
+
+		if counts > 10 {
+			log.Println(err)
+			return nil
+		}
+
+		log.Println("Backing off for two seconds....")
+		time.Sleep(2 * time.Second)
+		continue
+	}
 }

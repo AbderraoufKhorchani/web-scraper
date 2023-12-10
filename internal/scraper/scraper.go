@@ -3,7 +3,6 @@ package scraper
 import (
 	"fmt"
 	"log"
-	"strings"
 	"sync"
 
 	"github.com/AbderraoufKhorchani/web-scraper/internal/handlers"
@@ -13,7 +12,6 @@ import (
 type Scraper struct {
 }
 
-var quoteInstance handlers.Quote
 var mu sync.Mutex
 
 func Scrape() error {
@@ -22,7 +20,7 @@ func Scrape() error {
 	defer mu.Unlock()
 
 	// Check if the database is empty
-	isEmpty, err := quoteInstance.DatabaseIsEmpty()
+	isEmpty, err := handlers.DatabaseIsEmpty()
 	if err != nil {
 		log.Println("Error checking if the database is empty:", err)
 		return err
@@ -58,13 +56,13 @@ func Scrape() error {
 			}
 
 			// Add the quote to the database
-			err := quoteInstance.AddQuoteWithTags(*quote, tags)
+			err := handlers.AddQuoteWithTags(*quote, tags)
 			if err != nil {
 				log.Println("Error adding quote:", err)
 			}
 
 			// Print the extracted data
-			fmt.Printf("Quote: %s\nAuthor: %s\nTags: %s\n\n", quoteText, author, strings.Join(tags, ", "))
+			// fmt.Printf("Quote: %s\nAuthor: %s\nTags: %s\n\n", quoteText, author, strings.Join(tags, ", "))
 		})
 
 		// Set up error handling

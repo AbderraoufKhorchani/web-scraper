@@ -24,7 +24,7 @@ To run this authentication service, ensure you have the following prerequisites 
 1. Clone the repository:
 
 ```bash
-   git clone https://github.com/rf-krcn/authentication-service.git
+   git clone https://github.com/rf-krcn/web-scraper.git
    cd authentication-service
 ```
 2. Install dependencies:
